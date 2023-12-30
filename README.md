@@ -9,6 +9,7 @@ Individual patches used to create it are provided in the `patches/` directory.
 ## Patches included
 
 - [alpha](https://st.suckless.org/patches/alpha/) _(osc 11)_
+- [boxdraw](https://st.suckless.org/patches/boxdraw/) _(braile disabled in config)_
 
 ## Using this patch
 
