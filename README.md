@@ -9,7 +9,8 @@ Individual patches used to create it are provided in the `patches/` directory.
 ## Patches included
 
 - [alpha](https://st.suckless.org/patches/alpha/) _(osc 11)_
-- [boxdraw](https://st.suckless.org/patches/boxdraw/) _(braile disabled in config)_
+- [boxdraw](https://st.suckless.org/patches/boxdraw/) _(enabled by default, except braile)_
+- [scrollback](https://st.suckless.org/patches/scrollback/) _(with reflow, mouse, altscreen & mouse increment subpatches, modified to work with boxdraw)_
 
 ## Using this patch
 
