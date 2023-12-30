@@ -1,17 +1,17 @@
-From 538c7408190b50e3cdf0636b976e7ff995aab9b7 Mon Sep 17 00:00:00 2001
+From a3fccb7ecf5c959473f421a764d4696b458f645c Mon Sep 17 00:00:00 2001
 From: DarthChungo <antonio@adaro.eu>
-Date: Sat, 30 Dec 2023 22:48:18 +0100
+Date: Sat, 30 Dec 2023 23:42:38 +0100
 Subject: [PATCH] st-patched: apply patches
 
 ---
  Makefile       |   3 +-
  boxdraw.c      | 194 +++++++++++
  boxdraw_data.h | 214 ++++++++++++
- config.def.h   |  19 +
+ config.def.h   |  20 ++
  st.c           | 926 ++++++++++++++++++++++++++++++++++++-------------
  st.h           |  38 +-
  x.c            |  66 +++-
- 7 files changed, 1183 insertions(+), 277 deletions(-)
+ 7 files changed, 1184 insertions(+), 277 deletions(-)
  create mode 100644 boxdraw.c
  create mode 100644 boxdraw_data.h
 
@@ -457,7 +457,7 @@ index 0000000..7890500
 +	/* U+2571 - U+2573: unsupported (diagonals) */
 +};
 diff --git a/config.def.h b/config.def.h
-index 91ab8ca..6c4e131 100644
+index 91ab8ca..1677d10 100644
 --- a/config.def.h
 +++ b/config.def.h
 @@ -67,6 +67,18 @@ static unsigned int blinktimeout = 800;
@@ -489,16 +489,19 @@ index 91ab8ca..6c4e131 100644
  /* Terminal colors (16 first used in escape sequence) */
  static const char *colorname[] = {
  	/* 8 normal colors */
-@@ -176,6 +191,8 @@ static uint forcemousemod = ShiftMask;
+@@ -174,8 +189,11 @@ static uint forcemousemod = ShiftMask;
+  * Internal mouse shortcuts.
+  * Beware that overloading Button1 will disable the selection.
   */
++const unsigned int mousescrollincrement = 1;
  static MouseShortcut mshortcuts[] = {
  	/* mask                 button   function        argument       release */
-+	{ XK_ANY_MOD,           Button4, kscrollup,      {.i = 1},		0, /* !alt */ -1 },
-+	{ XK_ANY_MOD,           Button5, kscrolldown,    {.i = 1},		0, /* !alt */ -1 },
++	{ XK_ANY_MOD,           Button4, kscrollup,      {.i = mousescrollincrement}, 0, /* !alt */ -1 },
++	{ XK_ANY_MOD,           Button5, kscrolldown,    {.i = mousescrollincrement}, 0, /* !alt */ -1 },
  	{ XK_ANY_MOD,           Button2, selpaste,       {.i = 0},      1 },
  	{ ShiftMask,            Button4, ttysend,        {.s = "\033[5;2~"} },
  	{ XK_ANY_MOD,           Button4, ttysend,        {.s = "\031"} },
-@@ -201,6 +218,8 @@ static Shortcut shortcuts[] = {
+@@ -201,6 +219,8 @@ static Shortcut shortcuts[] = {
  	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
  	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
  	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
