@@ -1,6 +1,6 @@
-From 778c89013ec0d421e2b5ecfcf5786473f742d67e Mon Sep 17 00:00:00 2001
+From 3982a834a8833de78f4571a26d7a0b8465f626ec Mon Sep 17 00:00:00 2001
 From: DarthChungo <antonio@adaro.eu>
-Date: Sat, 30 Dec 2023 16:10:20 +0100
+Date: Sat, 30 Dec 2023 16:12:14 +0100
 Subject: [PATCH] st-patched: apply patches
 
 ---
@@ -457,7 +457,7 @@ index 0000000..7890500
 +	/* U+2571 - U+2573: unsupported (diagonals) */
 +};
 diff --git a/config.def.h b/config.def.h
-index 91ab8ca..fec62d7 100644
+index 91ab8ca..0c94a07 100644
 --- a/config.def.h
 +++ b/config.def.h
 @@ -67,6 +67,18 @@ static unsigned int blinktimeout = 800;
@@ -470,8 +470,8 @@ index 91ab8ca..fec62d7 100644
 + *    Bold affects lines thickness if boxdraw_bold is not 0. Italic is ignored.
 + * 0: disable (render all U25XX glyphs normally from the font).
 + */
-+const int boxdraw = 0;
-+const int boxdraw_bold = 0;
++const int boxdraw = 1;
++const int boxdraw_bold = 1;
 +
 +/* braille (U28XX):  1: render as adjacent "pixels",  0: use font */
 +const int boxdraw_braille = 0;
