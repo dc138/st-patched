@@ -1,23 +1,23 @@
-From da11b55d4606ee48e2a6ab1eccf57f4cc7683e1a Mon Sep 17 00:00:00 2001
+From 3cfa9052c4f2e32c3465436ced3195dab40e8503 Mon Sep 17 00:00:00 2001
 From: DarthChungo <antonio@adaro.eu>
-Date: Sun, 31 Dec 2023 17:43:38 +0100
+Date: Sun, 31 Dec 2023 18:20:17 +0100
 Subject: [PATCH] st-patched: apply patches
 
 ---
  Makefile       |    9 +-
  boxdraw.c      |  194 +++++++++
  boxdraw_data.h |  214 +++++++++
- config.def.h   |   52 +++
+ config.def.h   |   53 +++
  config.mk      |    7 +-
  hb.c           |  124 ++++++
  hb.h           |   14 +
- st.c           | 1129 +++++++++++++++++++++++++++++++++++++-----------
+ st.c           | 1131 +++++++++++++++++++++++++++++++++++++-----------
  st.desktop     |   12 +
- st.h           |   45 +-
+ st.h           |   46 +-
  st.info        |    2 +
  win.h          |    2 +-
- x.c            |  876 +++++++++++++++++++++++++++++++------
- 13 files changed, 2284 insertions(+), 396 deletions(-)
+ x.c            |  897 ++++++++++++++++++++++++++++++++------
+ 13 files changed, 2308 insertions(+), 397 deletions(-)
  create mode 100644 boxdraw.c
  create mode 100644 boxdraw_data.h
  create mode 100644 hb.c
@@ -482,7 +482,7 @@ index 0000000..7890500
 +	/* U+2571 - U+2573: unsupported (diagonals) */
 +};
 diff --git a/config.def.h b/config.def.h
-index 91ab8ca..9e99acf 100644
+index 91ab8ca..ec5a6c0 100644
 --- a/config.def.h
 +++ b/config.def.h
 @@ -56,6 +56,12 @@ int allowwindowops = 0;
@@ -539,10 +539,11 @@ index 91ab8ca..9e99acf 100644
  	{ XK_ANY_MOD,           Button2, selpaste,       {.i = 0},      1 },
  	{ ShiftMask,            Button4, ttysend,        {.s = "\033[5;2~"} },
  	{ XK_ANY_MOD,           Button4, ttysend,        {.s = "\031"} },
-@@ -201,6 +225,10 @@ static Shortcut shortcuts[] = {
+@@ -201,6 +225,11 @@ static Shortcut shortcuts[] = {
  	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
  	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
  	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
++	{ MODKEY,               XK_o,           opencopied,     {.v = "xdg-open"} },
 +	{ ShiftMask,            XK_Page_Up,     kscrollup,      {.i = -1} },
 +	{ ShiftMask,            XK_Page_Down,   kscrolldown,    {.i = -1} },
 +	{ MODKEY,               XK_l,           copyurl,        {.i =  0} },
@@ -550,7 +551,7 @@ index 91ab8ca..9e99acf 100644
  };
  
  /*
-@@ -472,3 +500,27 @@ static char ascii_printable[] =
+@@ -472,3 +501,27 @@ static char ascii_printable[] =
  	" !\"#$%&'()*+,-./0123456789:;<=>?"
  	"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
  	"`abcdefghijklmnopqrstuvwxyz{|}~";
@@ -756,7 +757,7 @@ index 0000000..88de9bd
 +void hbtransform(HbTransformData *, XftFont *, const Glyph *, int, int);
 +void hbcleanup(HbTransformData *);
 diff --git a/st.c b/st.c
-index d6478f5..4b85d46 100644
+index d6478f5..f11a3c3 100644
 --- a/st.c
 +++ b/st.c
 @@ -33,8 +33,11 @@
@@ -1210,6 +1211,15 @@ index d6478f5..4b85d46 100644
  }
  
  void
+@@ -803,7 +914,7 @@ ttynew(const char *line, char *cmd, const char *out, char **args)
+ 		break;
+ 	default:
+ #ifdef __OpenBSD__
+-		if (pledge("stdio rpath tty proc", NULL) == -1)
++		if (pledge("stdio rpath tty proc exec", NULL) == -1)
+ 			die("pledge\n");
+ #endif
+ 		close(s);
 @@ -814,6 +925,9 @@ ttynew(const char *line, char *cmd, const char *out, char **args)
  	return cmdfd;
  }
@@ -2487,7 +2497,7 @@ index 0000000..2d2b76f
 +Comment=st is a simple terminal implementation for X
 +StartupWMClass=st-256color
 diff --git a/st.h b/st.h
-index fd3b0d8..eacaa07 100644
+index fd3b0d8..db1615c 100644
 --- a/st.h
 +++ b/st.h
 @@ -11,7 +11,8 @@
@@ -2543,12 +2553,13 @@ index fd3b0d8..eacaa07 100644
  } Glyph;
  
  typedef Glyph *Line;
-@@ -81,13 +88,18 @@ void die(const char *, ...);
+@@ -81,13 +88,19 @@ void die(const char *, ...);
  void redraw(void);
  void draw(void);
  
 +void kscrolldown(const Arg *);
 +void kscrollup(const Arg *);
++void opencopied(const Arg *);
  void printscreen(const Arg *);
  void printsel(const Arg *);
  void sendbreak(const Arg *);
@@ -2562,7 +2573,7 @@ index fd3b0d8..eacaa07 100644
  void tresize(int, int);
  void tsetdirtattr(int);
  void ttyhangup(void);
-@@ -111,6 +123,14 @@ void *xmalloc(size_t);
+@@ -111,6 +124,14 @@ void *xmalloc(size_t);
  void *xrealloc(void *, size_t);
  char *xstrdup(const char *);
  
@@ -2577,7 +2588,7 @@ index fd3b0d8..eacaa07 100644
  /* config.h globals */
  extern char *utmp;
  extern char *scroll;
-@@ -124,3 +144,4 @@ extern unsigned int tabspaces;
+@@ -124,3 +145,4 @@ extern unsigned int tabspaces;
  extern unsigned int defaultfg;
  extern unsigned int defaultbg;
  extern unsigned int defaultcs;
@@ -2614,10 +2625,18 @@ index 6de960d..94679e4 100644
  void xfinishdraw(void);
  void xloadcols(void);
 diff --git a/x.c b/x.c
-index b36fb8c..39e52da 100644
+index b36fb8c..aec2475 100644
 --- a/x.c
 +++ b/x.c
-@@ -14,11 +14,13 @@
+@@ -5,6 +5,7 @@
+ #include <locale.h>
+ #include <signal.h>
+ #include <sys/select.h>
++#include <sys/wait.h>
+ #include <time.h>
+ #include <unistd.h>
+ #include <libgen.h>
+@@ -14,11 +15,13 @@
  #include <X11/keysym.h>
  #include <X11/Xft/Xft.h>
  #include <X11/XKBlib.h>
@@ -2631,7 +2650,7 @@ index b36fb8c..39e52da 100644
  
  /* types used in config.h */
  typedef struct {
-@@ -34,6 +36,7 @@ typedef struct {
+@@ -34,6 +37,7 @@ typedef struct {
  	void (*func)(const Arg *);
  	const Arg arg;
  	uint  release;
@@ -2639,7 +2658,7 @@ index b36fb8c..39e52da 100644
  } MouseShortcut;
  
  typedef struct {
-@@ -45,6 +48,14 @@ typedef struct {
+@@ -45,6 +49,14 @@ typedef struct {
  	signed char appcursor; /* application cursor */
  } Key;
  
@@ -2654,7 +2673,7 @@ index b36fb8c..39e52da 100644
  /* X modifiers */
  #define XK_ANY_MOD    UINT_MAX
  #define XK_NO_MOD     0
-@@ -105,6 +116,7 @@ typedef struct {
+@@ -105,6 +117,7 @@ typedef struct {
  	XSetWindowAttributes attrs;
  	int scr;
  	int isfixed; /* is fixed geometry? */
@@ -2662,7 +2681,7 @@ index b36fb8c..39e52da 100644
  	int l, t; /* left and top offset */
  	int gm; /* geometry mask */
  } XWindow;
-@@ -141,6 +153,7 @@ typedef struct {
+@@ -141,6 +154,7 @@ typedef struct {
  } DC;
  
  static inline ushort sixd_to_16bit(int);
@@ -2670,7 +2689,7 @@ index b36fb8c..39e52da 100644
  static int xmakeglyphfontspecs(XftGlyphFontSpec *, const Glyph *, int, int, int);
  static void xdrawglyphfontspecs(const XftGlyphFontSpec *, Glyph, int, int, int);
  static void xdrawglyph(Glyph, int, int);
-@@ -455,6 +468,7 @@ mouseaction(XEvent *e, uint release)
+@@ -455,6 +469,7 @@ mouseaction(XEvent *e, uint release)
  	for (ms = mshortcuts; ms < mshortcuts + LEN(mshortcuts); ms++) {
  		if (ms->release == release &&
  		    ms->button == e->xbutton.button &&
@@ -2678,7 +2697,7 @@ index b36fb8c..39e52da 100644
  		    (match(ms->mod, state) ||  /* exact or forced */
  		     match(ms->mod, state & ~forcemousemod))) {
  			ms->func(&(ms->arg));
-@@ -686,6 +700,7 @@ setsel(char *str, Time t)
+@@ -686,6 +701,7 @@ setsel(char *str, Time t)
  	XSetSelectionOwner(xw.dpy, XA_PRIMARY, xw.win, t);
  	if (XGetSelectionOwner(xw.dpy, XA_PRIMARY) != xw.win)
  		selclear();
@@ -2686,7 +2705,7 @@ index b36fb8c..39e52da 100644
  }
  
  void
-@@ -752,12 +767,12 @@ xresize(int col, int row)
+@@ -752,12 +768,12 @@ xresize(int col, int row)
  
  	XFreePixmap(xw.dpy, xw.buf);
  	xw.buf = XCreatePixmap(xw.dpy, xw.win, win.w, win.h,
@@ -2701,7 +2720,7 @@ index b36fb8c..39e52da 100644
  }
  
  ushort
-@@ -812,6 +827,10 @@ xloadcols(void)
+@@ -812,6 +828,10 @@ xloadcols(void)
  			else
  				die("could not allocate color %d\n", i);
  		}
@@ -2712,7 +2731,7 @@ index b36fb8c..39e52da 100644
  	loaded = 1;
  }
  
-@@ -842,6 +861,12 @@ xsetcolorname(int x, const char *name)
+@@ -842,6 +862,12 @@ xsetcolorname(int x, const char *name)
  	XftColorFree(xw.dpy, xw.vis, xw.cmap, &dc.col[x]);
  	dc.col[x] = ncolor;
  
@@ -2725,7 +2744,7 @@ index b36fb8c..39e52da 100644
  	return 0;
  }
  
-@@ -1062,6 +1087,9 @@ xunloadfont(Font *f)
+@@ -1062,6 +1088,9 @@ xunloadfont(Font *f)
  void
  xunloadfonts(void)
  {
@@ -2735,7 +2754,7 @@ index b36fb8c..39e52da 100644
  	/* Free the loaded fonts in the font cache.  */
  	while (frclen > 0)
  		XftFontClose(xw.dpy, frc[--frclen].font);
-@@ -1134,11 +1162,23 @@ xinit(int cols, int rows)
+@@ -1134,11 +1163,23 @@ xinit(int cols, int rows)
  	Window parent;
  	pid_t thispid = getpid();
  	XColor xmousefg, xmousebg;
@@ -2760,7 +2779,7 @@ index b36fb8c..39e52da 100644
  
  	/* font */
  	if (!FcInit())
-@@ -1148,7 +1188,7 @@ xinit(int cols, int rows)
+@@ -1148,7 +1189,7 @@ xinit(int cols, int rows)
  	xloadfonts(usedfont, 0);
  
  	/* colors */
@@ -2769,7 +2788,7 @@ index b36fb8c..39e52da 100644
  	xloadcols();
  
  	/* adjust fixed window geometry */
-@@ -1168,24 +1208,20 @@ xinit(int cols, int rows)
+@@ -1168,24 +1209,20 @@ xinit(int cols, int rows)
  		| ButtonMotionMask | ButtonPressMask | ButtonReleaseMask;
  	xw.attrs.colormap = xw.cmap;
  
@@ -2798,7 +2817,7 @@ index b36fb8c..39e52da 100644
  
  	/* Xft rendering context */
  	xw.draw = XftDrawCreate(xw.dpy, xw.buf, xw.vis, xw.cmap);
-@@ -1237,6 +1273,24 @@ xinit(int cols, int rows)
+@@ -1237,6 +1274,24 @@ xinit(int cols, int rows)
  	xsel.xtarget = XInternAtom(xw.dpy, "UTF8_STRING", 0);
  	if (xsel.xtarget == None)
  		xsel.xtarget = XA_STRING;
@@ -2823,7 +2842,7 @@ index b36fb8c..39e52da 100644
  }
  
  int
-@@ -1253,122 +1307,204 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
+@@ -1253,122 +1308,204 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
  	FcPattern *fcpattern, *fontpattern;
  	FcFontSet *fcsets[] = { NULL };
  	FcCharSet *fccharset;
@@ -2876,7 +2895,7 @@ index b36fb8c..39e52da 100644
  			}
 -			yp = winy + font->ascent;
 -		}
--
+ 
 -		/* Lookup character index with default font. */
 -		glyphidx = XftCharIndex(xw.dpy, font->match, rune);
 -		if (glyphidx) {
@@ -2888,7 +2907,7 @@ index b36fb8c..39e52da 100644
 -			numspecs++;
 -			continue;
 -		}
- 
+-
 -		/* Fallback on font cache, search the font cache for match. */
 -		for (f = 0; f < frclen; f++) {
 -			glyphidx = XftCharIndex(xw.dpy, frc[f].font, rune);
@@ -3015,10 +3034,7 @@ index b36fb8c..39e52da 100644
 -				font->set = FcFontSort(0, font->pattern,
 -				                       1, 0, &fcres);
 -			fcsets[0] = font->set;
-+			/* Cleanup and get ready for next segment. */
-+			hbcleanup(&shaped);
-+			start = i;
- 
+-
 -			/*
 -			 * Nothing was found in the cache. Now use
 -			 * some dozen of Fontconfig calls to get the
@@ -3028,6 +3044,14 @@ index b36fb8c..39e52da 100644
 -			 */
 -			fcpattern = FcPatternDuplicate(font->pattern);
 -			fccharset = FcCharSetCreate();
++			/* Cleanup and get ready for next segment. */
++			hbcleanup(&shaped);
++			start = i;
+ 
+-			FcCharSetAddChar(fccharset, rune);
+-			FcPatternAddCharSet(fcpattern, FC_CHARSET,
+-					fccharset);
+-			FcPatternAddBool(fcpattern, FC_SCALABLE, 1);
 +			/* Determine font for glyph if different from previous glyph. */
 +			if (prevmode != mode) {
 +				prevmode = mode;
@@ -3037,17 +3061,15 @@ index b36fb8c..39e52da 100644
 +		}
 +	}
  
--			FcCharSetAddChar(fccharset, rune);
--			FcPatternAddCharSet(fcpattern, FC_CHARSET,
--					fccharset);
--			FcPatternAddBool(fcpattern, FC_SCALABLE, 1);
+-			FcConfigSubstitute(0, fcpattern,
+-					FcMatchPattern);
+-			FcDefaultSubstitute(fcpattern);
 +	hbcleanup(&shaped);
 +	return numspecs;
 +}
  
--			FcConfigSubstitute(0, fcpattern,
--					FcMatchPattern);
--			FcDefaultSubstitute(fcpattern);
+-			fontpattern = FcFontSetMatch(0, fcsets, 1,
+-					fcpattern, &fcres);
 +static int isSlopeRising (int x, int iPoint, int waveWidth)
 +{
 +	//    .     .     .     .
@@ -3055,18 +3077,13 @@ index b36fb8c..39e52da 100644
 +	//  /   \ /   \ /   \ /   \
 +	// .     .     .     .     .
  
--			fontpattern = FcFontSetMatch(0, fcsets, 1,
--					fcpattern, &fcres);
-+	// Find absolute `x` of point
-+	x += iPoint * (waveWidth/2);
- 
 -			/* Allocate memory for the new cache entry. */
 -			if (frclen >= frccap) {
 -				frccap += 16;
 -				frc = xrealloc(frc, frccap * sizeof(Fontcache));
 -			}
-+	// Find index of absolute wave
-+	int absSlope = x / ((float)waveWidth/2);
++	// Find absolute `x` of point
++	x += iPoint * (waveWidth/2);
  
 -			frc[frclen].font = XftFontOpenPattern(xw.dpy,
 -					fontpattern);
@@ -3075,10 +3092,15 @@ index b36fb8c..39e52da 100644
 -					strerror(errno));
 -			frc[frclen].flags = frcflags;
 -			frc[frclen].unicodep = rune;
++	// Find index of absolute wave
++	int absSlope = x / ((float)waveWidth/2);
+ 
+-			glyphidx = XftCharIndex(xw.dpy, frc[frclen].font, rune);
 +	return (absSlope % 2);
 +}
  
--			glyphidx = XftCharIndex(xw.dpy, frc[frclen].font, rune);
+-			f = frclen;
+-			frclen++;
 +static int getSlope (int x, int iPoint, int waveWidth)
 +{
 +	// Sizes: Caps are half width of slopes
@@ -3088,8 +3110,9 @@ index b36fb8c..39e52da 100644
 +	// 0       3_0       3_0      3_0       3_
 +	// <2->    <1>         <---6---->
  
--			f = frclen;
--			frclen++;
+-			FcPatternDestroy(fcpattern);
+-			FcCharSetDestroy(fccharset);
+-		}
 +	// Find type of first point
 +	int firstType;
 +	x -= (x / waveWidth) * waveWidth;
@@ -3102,14 +3125,6 @@ index b36fb8c..39e52da 100644
 +	else
 +		firstType = UNDERCURL_SLOPE_BOTTOM_CAP;
  
--			FcPatternDestroy(fcpattern);
--			FcCharSetDestroy(fccharset);
--		}
-+	// Find type of given point
-+	int pointType = (iPoint % 4);
-+	pointType += firstType;
-+	pointType %= 4;
- 
 -		specs[numspecs].font = frc[f].font;
 -		specs[numspecs].glyph = glyphidx;
 -		specs[numspecs].x = (short)xp;
@@ -3117,13 +3132,17 @@ index b36fb8c..39e52da 100644
 -		xp += runewidth;
 -		numspecs++;
 -	}
--
++	// Find type of given point
++	int pointType = (iPoint % 4);
++	pointType += firstType;
++	pointType %= 4;
+ 
 -	return numspecs;
 +	return pointType;
  }
  
  void
-@@ -1488,13 +1624,366 @@ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, i
+@@ -1488,13 +1625,366 @@ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, i
  	r.width = width;
  	XftDrawSetClipRectangles(xw.draw, winx, winy, &r, 1);
  
@@ -3494,7 +3513,7 @@ index b36fb8c..39e52da 100644
  	}
  
  	if (base.mode & ATTR_STRUCK) {
-@@ -1517,14 +2006,17 @@ xdrawglyph(Glyph g, int x, int y)
+@@ -1517,14 +2007,17 @@ xdrawglyph(Glyph g, int x, int y)
  }
  
  void
@@ -3514,7 +3533,7 @@ index b36fb8c..39e52da 100644
  
  	if (IS_SET(MODE_HIDE))
  		return;
-@@ -1532,7 +2024,7 @@ xdrawcursor(int cx, int cy, Glyph g, int ox, int oy, Glyph og)
+@@ -1532,7 +2025,7 @@ xdrawcursor(int cx, int cy, Glyph g, int ox, int oy, Glyph og)
  	/*
  	 * Select the right color for the right mode.
  	 */
@@ -3523,7 +3542,7 @@ index b36fb8c..39e52da 100644
  
  	if (IS_SET(MODE_REVERSE)) {
  		g.mode |= ATTR_REVERSE;
-@@ -1652,18 +2144,16 @@ xdrawline(Line line, int x1, int y1, int x2)
+@@ -1652,18 +2145,16 @@ xdrawline(Line line, int x1, int y1, int x2)
  	Glyph base, new;
  	XftGlyphFontSpec *specs = xw.specbuf;
  
@@ -3546,7 +3565,7 @@ index b36fb8c..39e52da 100644
  			i = 0;
  		}
  		if (i == 0) {
-@@ -1672,8 +2162,10 @@ xdrawline(Line line, int x1, int y1, int x2)
+@@ -1672,8 +2163,10 @@ xdrawline(Line line, int x1, int y1, int x2)
  		}
  		i++;
  	}
@@ -3559,7 +3578,7 @@ index b36fb8c..39e52da 100644
  }
  
  void
-@@ -1911,6 +2403,9 @@ resize(XEvent *e)
+@@ -1911,6 +2404,9 @@ resize(XEvent *e)
  	cresize(e->xconfigure.width, e->xconfigure.height);
  }
  
@@ -3569,7 +3588,7 @@ index b36fb8c..39e52da 100644
  void
  run(void)
  {
-@@ -1945,7 +2440,7 @@ run(void)
+@@ -1945,7 +2441,7 @@ run(void)
  		FD_SET(ttyfd, &rfd);
  		FD_SET(xfd, &rfd);
  
@@ -3578,7 +3597,7 @@ index b36fb8c..39e52da 100644
  			timeout = 0;  /* existing events might not set xfd */
  
  		seltv.tv_sec = timeout / 1E3;
-@@ -1959,7 +2454,8 @@ run(void)
+@@ -1959,7 +2455,8 @@ run(void)
  		}
  		clock_gettime(CLOCK_MONOTONIC, &now);
  
@@ -3588,7 +3607,7 @@ index b36fb8c..39e52da 100644
  			ttyread();
  
  		xev = 0;
-@@ -1983,7 +2479,7 @@ run(void)
+@@ -1983,7 +2480,7 @@ run(void)
  		 * maximum latency intervals during `cat huge.txt`, and perfect
  		 * sync with periodic updates from animations/key-repeats/etc.
  		 */
@@ -3597,7 +3616,7 @@ index b36fb8c..39e52da 100644
  			if (!drawing) {
  				trigger = now;
  				drawing = 1;
-@@ -1994,6 +2490,18 @@ run(void)
+@@ -1994,6 +2491,18 @@ run(void)
  				continue;  /* we have time, try to find idle */
  		}
  
@@ -3616,7 +3635,7 @@ index b36fb8c..39e52da 100644
  		/* idle detected or maxlatency exhausted -> draw */
  		timeout = -1;
  		if (blinktimeout && tattrset(ATTR_BLINK)) {
-@@ -2014,6 +2522,118 @@ run(void)
+@@ -2014,6 +2523,118 @@ run(void)
  	}
  }
  
@@ -3735,7 +3754,7 @@ index b36fb8c..39e52da 100644
  void
  usage(void)
  {
-@@ -2038,6 +2658,10 @@ main(int argc, char *argv[])
+@@ -2038,6 +2659,10 @@ main(int argc, char *argv[])
  	case 'a':
  		allowaltscreen = 0;
  		break;
@@ -3746,7 +3765,7 @@ index b36fb8c..39e52da 100644
  	case 'c':
  		opt_class = EARGF(usage());
  		break;
-@@ -2087,6 +2711,8 @@ run:
+@@ -2087,6 +2712,8 @@ run:
  
  	setlocale(LC_CTYPE, "");
  	XSetLocaleModifiers("");
@@ -3755,6 +3774,30 @@ index b36fb8c..39e52da 100644
  	cols = MAX(cols, 1);
  	rows = MAX(rows, 1);
  	tnew(cols, rows);
+@@ -2097,3 +2724,23 @@ run:
+ 
+ 	return 0;
+ }
++
++void
++opencopied(const Arg *arg)
++{
++	char * const clip = xsel.clipboard;
++	pid_t chpid;
++
++	if(!clip) {
++		fprintf(stderr, "Warning: nothing copied to clipboard\n");
++		return;
++	}
++
++	if ((chpid = fork()) == 0) {
++		if (fork() == 0)
++			execlp(arg->v, arg->v, clip, NULL);
++		exit(1);
++	}
++	if (chpid > 0)
++		waitpid(chpid, NULL, 0);
++}
 -- 
 2.43.0
 

@@ -17,7 +17,8 @@ Individual patches used to create it are provided in the `patches/` directory.
 - [desktopentry](https://st.suckless.org/patches/desktopentry/)
 - [sync](https://st.suckless.org/patches/sync/) _(modified for st 0.9)_
 - [copyurl](https://st.suckless.org/patches/copyurl/) _(with multiline)_
-- [undercurl](https://st.suckless.org/patches/undercurl/) _(modified for st 0.9)_
+- [undercurl](https://st.suckless.org/patches/undercurl/) _(modified to work with patches)_
+- [openclipboard](https://st.suckless.org/patches/open_copied_url/) _(modified to work with patches)_
 
 ## Using this patch
 
