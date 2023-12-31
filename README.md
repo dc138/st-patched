@@ -12,6 +12,7 @@ Individual patches used to create it are provided in the `patches/` directory.
 - [boxdraw](https://st.suckless.org/patches/boxdraw/) _(enabled by default, except braile)_
 - [scrollback](https://st.suckless.org/patches/scrollback/) _(with reflow, mouse, altscreen & mouse increment subpatches, modified to work with boxdraw)_
 - [ligatures](https://st.suckless.org/patches/ligatures/) _(boxdraw version)_
+- [xresources](https://st.suckless.org/patches/xresources-with-reload-signal/) _(live reload with USR1)_
 
 ## Using this patch
 
