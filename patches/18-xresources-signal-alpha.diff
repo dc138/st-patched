@@ -20,7 +20,7 @@ index 2a3bd38..e8fe7ad 100644
  
  char *argv0;
  #include "arg.h"
-@@ -2011,6 +2012,118 @@ run(void)
+@@ -2011,6 +2012,120 @@ run(void)
  	}
  }
  
@@ -99,6 +99,8 @@ index 2a3bd38..e8fe7ad 100644
 +		  // see above.
 +		  defaultrcs = defaultbg;
 +		}
++
++		XRESOURCE_LOAD_FLOAT("alpha", alpha);
 +
 +		XRESOURCE_LOAD_STRING("font", font);
 +		XRESOURCE_LOAD_STRING("termname", termname);

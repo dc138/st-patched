@@ -1,6 +1,6 @@
-From 3cfa9052c4f2e32c3465436ced3195dab40e8503 Mon Sep 17 00:00:00 2001
+From 21b1db78e325e98c5e723492145a74cdd49bcf23 Mon Sep 17 00:00:00 2001
 From: DarthChungo <antonio@adaro.eu>
-Date: Sun, 31 Dec 2023 18:20:17 +0100
+Date: Sun, 31 Dec 2023 18:32:46 +0100
 Subject: [PATCH] st-patched: apply patches
 
 ---
@@ -16,8 +16,8 @@ Subject: [PATCH] st-patched: apply patches
  st.h           |   46 +-
  st.info        |    2 +
  win.h          |    2 +-
- x.c            |  897 ++++++++++++++++++++++++++++++++------
- 13 files changed, 2308 insertions(+), 397 deletions(-)
+ x.c            |  899 ++++++++++++++++++++++++++++++++------
+ 13 files changed, 2310 insertions(+), 397 deletions(-)
  create mode 100644 boxdraw.c
  create mode 100644 boxdraw_data.h
  create mode 100644 hb.c
@@ -2625,7 +2625,7 @@ index 6de960d..94679e4 100644
  void xfinishdraw(void);
  void xloadcols(void);
 diff --git a/x.c b/x.c
-index b36fb8c..aec2475 100644
+index b36fb8c..86597c7 100644
 --- a/x.c
 +++ b/x.c
 @@ -5,6 +5,7 @@
@@ -3635,7 +3635,7 @@ index b36fb8c..aec2475 100644
  		/* idle detected or maxlatency exhausted -> draw */
  		timeout = -1;
  		if (blinktimeout && tattrset(ATTR_BLINK)) {
-@@ -2014,6 +2523,118 @@ run(void)
+@@ -2014,6 +2523,120 @@ run(void)
  	}
  }
  
@@ -3715,6 +3715,8 @@ index b36fb8c..aec2475 100644
 +		  defaultrcs = defaultbg;
 +		}
 +
++		XRESOURCE_LOAD_FLOAT("alpha", alpha);
++
 +		XRESOURCE_LOAD_STRING("font", font);
 +		XRESOURCE_LOAD_STRING("termname", termname);
 +
@@ -3754,7 +3756,7 @@ index b36fb8c..aec2475 100644
  void
  usage(void)
  {
-@@ -2038,6 +2659,10 @@ main(int argc, char *argv[])
+@@ -2038,6 +2661,10 @@ main(int argc, char *argv[])
  	case 'a':
  		allowaltscreen = 0;
  		break;
@@ -3765,7 +3767,7 @@ index b36fb8c..aec2475 100644
  	case 'c':
  		opt_class = EARGF(usage());
  		break;
-@@ -2087,6 +2712,8 @@ run:
+@@ -2087,6 +2714,8 @@ run:
  
  	setlocale(LC_CTYPE, "");
  	XSetLocaleModifiers("");
@@ -3774,7 +3776,7 @@ index b36fb8c..aec2475 100644
  	cols = MAX(cols, 1);
  	rows = MAX(rows, 1);
  	tnew(cols, rows);
-@@ -2097,3 +2724,23 @@ run:
+@@ -2097,3 +2726,23 @@ run:
  
  	return 0;
  }
