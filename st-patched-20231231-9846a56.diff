@@ -1,13 +1,13 @@
-From 21b1db78e325e98c5e723492145a74cdd49bcf23 Mon Sep 17 00:00:00 2001
+From 5ee510b2c2c3b3a3eb9481185e2e5f333499bbd3 Mon Sep 17 00:00:00 2001
 From: DarthChungo <antonio@adaro.eu>
-Date: Sun, 31 Dec 2023 18:32:46 +0100
+Date: Sun, 31 Dec 2023 20:23:26 +0100
 Subject: [PATCH] st-patched: apply patches
 
 ---
  Makefile       |    9 +-
  boxdraw.c      |  194 +++++++++
  boxdraw_data.h |  214 +++++++++
- config.def.h   |   53 +++
+ config.def.h   |   57 ++-
  config.mk      |    7 +-
  hb.c           |  124 ++++++
  hb.h           |   14 +
@@ -17,7 +17,7 @@ Subject: [PATCH] st-patched: apply patches
  st.info        |    2 +
  win.h          |    2 +-
  x.c            |  899 ++++++++++++++++++++++++++++++++------
- 13 files changed, 2310 insertions(+), 397 deletions(-)
+ 13 files changed, 2312 insertions(+), 399 deletions(-)
  create mode 100644 boxdraw.c
  create mode 100644 boxdraw_data.h
  create mode 100644 hb.c
@@ -482,9 +482,27 @@ index 0000000..7890500
 +	/* U+2571 - U+2573: unsupported (diagonals) */
 +};
 diff --git a/config.def.h b/config.def.h
-index 91ab8ca..ec5a6c0 100644
+index 91ab8ca..6f624a5 100644
 --- a/config.def.h
 +++ b/config.def.h
+@@ -6,7 +6,7 @@
+  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
+  */
+ static char *font = "Liberation Mono:pixelsize=12:antialias=true:autohint=true";
+-static int borderpx = 2;
++static int borderpx = 6;
+ 
+ /*
+  * What program is execed by st depends of these precedence rules:
+@@ -34,7 +34,7 @@ static float chscale = 1.0;
+  *
+  * More advanced example: L" `'\"()[]{}"
+  */
+-wchar_t *worddelimiters = L" ";
++wchar_t *worddelimiters = L" `'\"()[]{}";
+ 
+ /* selection timeouts (in milliseconds) */
+ static unsigned int doubleclicktimeout = 300;
 @@ -56,6 +56,12 @@ int allowwindowops = 0;
  static double minlatency = 8;
  static double maxlatency = 33;
@@ -522,7 +540,7 @@ index 91ab8ca..ec5a6c0 100644
  unsigned int tabspaces = 8;
  
 +/* bg opacity */
-+float alpha = 0.8;
++float alpha = 1.;
 +
  /* Terminal colors (16 first used in escape sequence) */
  static const char *colorname[] = {

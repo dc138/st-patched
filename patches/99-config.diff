@@ -1,17 +1,35 @@
-From 153a1fec386062ddd06e0c78938d1a64e0b70f20 Mon Sep 17 00:00:00 2001
+From e2f14a942a6be37de7f0017fcdca49c7b8990355 Mon Sep 17 00:00:00 2001
 From: DarthChungo <antonio@adaro.eu>
-Date: Sat, 30 Dec 2023 16:03:10 +0100
+Date: Sun, 31 Dec 2023 20:21:10 +0100
 Subject: [PATCH] st-patched: config
 
 ---
- config.def.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ config.def.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/config.def.h b/config.def.h
-index fec62d7..0e485c9 100644
+index ec5a6c0..5e68228 100644
 --- a/config.def.h
 +++ b/config.def.h
-@@ -73,7 +73,7 @@ static unsigned int cursorthickness = 2;
+@@ -6,7 +6,7 @@
+  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
+  */
+ static char *font = "Liberation Mono:pixelsize=12:antialias=true:autohint=true";
+-static int borderpx = 2;
++static int borderpx = 6;
+ 
+ /*
+  * What program is execed by st depends of these precedence rules:
+@@ -34,7 +34,7 @@ static float chscale = 1.0;
+  *
+  * More advanced example: L" `'\"()[]{}"
+  */
+-wchar_t *worddelimiters = L" ";
++wchar_t *worddelimiters = L" `'\"()[]{}";
+ 
+ /* selection timeouts (in milliseconds) */
+ static unsigned int doubleclicktimeout = 300;
+@@ -79,8 +79,8 @@ static unsigned int cursorthickness = 2;
   *    Bold affects lines thickness if boxdraw_bold is not 0. Italic is ignored.
   * 0: disable (render all U25XX glyphs normally from the font).
   */
@@ -20,8 +38,17 @@ index fec62d7..0e485c9 100644
 +const int boxdraw = 1;
 +const int boxdraw_bold = 1;
  
- /*
-  * bell volume. It must be a value between -100 and 100. Use 0 for disabling
+ /* braille (U28XX):  1: render as adjacent "pixels",  0: use font */
+ const int boxdraw_braille = 0;
+@@ -112,7 +112,7 @@ char *termname = "st-256color";
+ unsigned int tabspaces = 8;
+ 
+ /* bg opacity */
+-float alpha = 0.8;
++float alpha = 1.;
+ 
+ /* Terminal colors (16 first used in escape sequence) */
+ static const char *colorname[] = {
 -- 
 2.43.0
 
