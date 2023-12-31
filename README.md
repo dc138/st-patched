@@ -15,6 +15,7 @@ Individual patches used to create it are provided in the `patches/` directory.
 - [xresources](https://st.suckless.org/patches/xresources-with-reload-signal/) _(live reload with USR1)_
 - [clipboard](https://st.suckless.org/patches/clipboard/)
 - [desktopentry](https://st.suckless.org/patches/desktopentry/)
+- [sync](https://st.suckless.org/patches/sync/) _(modified for st 0.9)_
 
 ## Using this patch
 
