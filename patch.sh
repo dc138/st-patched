@@ -33,6 +33,8 @@ done
 
 echo "==> generaing unified patch file"
 
+rm -f ../st-patched-*-*.diff
+
 git add .
 git commit -m 'st-patched: apply patches'
 git format-patch 'HEAD^' --stdout > "../st-patched-$date-$rev.diff"
