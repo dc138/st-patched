@@ -1,28 +1,30 @@
-From b2f2bfb1a136d5bd387abc2f59330c5ee0b46636 Mon Sep 17 00:00:00 2001
+From a8ac1517801c3f292138408367597473d9f85de5 Mon Sep 17 00:00:00 2001
 From: DarthChungo <antonio@adaro.eu>
-Date: Sun, 31 Dec 2023 12:51:12 +0100
+Date: Sun, 31 Dec 2023 12:58:05 +0100
 Subject: [PATCH] st-patched: apply patches
 
 ---
- Makefile       |   6 +-
+ Makefile       |   9 +-
  boxdraw.c      | 194 +++++++++++
  boxdraw_data.h | 214 ++++++++++++
  config.def.h   |  20 ++
- config.mk      |   6 +-
+ config.mk      |   7 +-
  hb.c           | 124 +++++++
  hb.h           |  14 +
  st.c           | 929 ++++++++++++++++++++++++++++++++++++-------------
+ st.desktop     |  12 +
  st.h           |  41 ++-
  win.h          |   2 +-
  x.c            | 456 +++++++++++++++++-------
- 11 files changed, 1614 insertions(+), 392 deletions(-)
+ 12 files changed, 1630 insertions(+), 392 deletions(-)
  create mode 100644 boxdraw.c
  create mode 100644 boxdraw_data.h
  create mode 100644 hb.c
  create mode 100644 hb.h
+ create mode 100644 st.desktop
 
 diff --git a/Makefile b/Makefile
-index 15db421..05124bf 100644
+index 15db421..842dbfe 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -4,7 +4,7 @@
@@ -45,6 +47,19 @@ index 15db421..05124bf 100644
  
  $(OBJ): config.h config.mk
  
+@@ -43,9 +45,12 @@ install: st
+ 	chmod 644 $(DESTDIR)$(MANPREFIX)/man1/st.1
+ 	tic -sx st.info
+ 	@echo Please see the README file regarding the terminfo entry of st.
++	mkdir -p $(DESTDIR)$(APPPREFIX)
++	cp -f st.desktop $(DESTDIR)$(APPPREFIX)
+ 
+ uninstall:
+ 	rm -f $(DESTDIR)$(PREFIX)/bin/st
++	rm -f $(DESTDIR)$(APPPREFIX)/st.desktop
+ 	rm -f $(DESTDIR)$(MANPREFIX)/man1/st.1
+ 
+ .PHONY: all clean dist install uninstall
 diff --git a/boxdraw.c b/boxdraw.c
 new file mode 100644
 index 0000000..28a92d0
@@ -520,10 +535,18 @@ index 91ab8ca..1677d10 100644
  
  /*
 diff --git a/config.mk b/config.mk
-index 1e306f8..3e13e53 100644
+index 1e306f8..48d6389 100644
 --- a/config.mk
 +++ b/config.mk
-@@ -15,10 +15,12 @@ PKG_CONFIG = pkg-config
+@@ -5,6 +5,7 @@ VERSION = 0.9
+ 
+ # paths
+ PREFIX = /usr/local
++APPPREFIX = $(PREFIX)/share/applications
+ MANPREFIX = $(PREFIX)/share/man
+ 
+ X11INC = /usr/X11R6/include
+@@ -15,10 +16,12 @@ PKG_CONFIG = pkg-config
  # includes and libs
  INCS = -I$(X11INC) \
         `$(PKG_CONFIG) --cflags fontconfig` \
@@ -2087,6 +2110,24 @@ index d6478f5..8cc06c7 100644
  	term.ocx = cx;
  	term.ocy = term.c.y;
  	xfinishdraw();
+diff --git a/st.desktop b/st.desktop
+new file mode 100644
+index 0000000..2d2b76f
+--- /dev/null
++++ b/st.desktop
+@@ -0,0 +1,12 @@
++[Desktop Entry]
++Type=Application
++Exec=st
++TryExec=st
++Icon=utilities-terminal
++Terminal=false
++Categories=System;TerminalEmulator;
++
++Name=st
++GenericName=Terminal
++Comment=st is a simple terminal implementation for X
++StartupWMClass=st-256color
 diff --git a/st.h b/st.h
 index fd3b0d8..e320538 100644
 --- a/st.h

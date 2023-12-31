@@ -14,6 +14,7 @@ Individual patches used to create it are provided in the `patches/` directory.
 - [ligatures](https://st.suckless.org/patches/ligatures/) _(boxdraw version)_
 - [xresources](https://st.suckless.org/patches/xresources-with-reload-signal/) _(live reload with USR1)_
 - [clipboard](https://st.suckless.org/patches/clipboard/)
+- [desktopentry](https://st.suckless.org/patches/desktopentry/)
 
 ## Using this patch
 
