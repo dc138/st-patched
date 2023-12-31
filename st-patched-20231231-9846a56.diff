@@ -1,6 +1,6 @@
-From eb61df363783b5400ff2cda2b5cd5f833dc151a0 Mon Sep 17 00:00:00 2001
+From b2f2bfb1a136d5bd387abc2f59330c5ee0b46636 Mon Sep 17 00:00:00 2001
 From: DarthChungo <antonio@adaro.eu>
-Date: Sun, 31 Dec 2023 12:46:21 +0100
+Date: Sun, 31 Dec 2023 12:51:12 +0100
 Subject: [PATCH] st-patched: apply patches
 
 ---
@@ -14,8 +14,8 @@ Subject: [PATCH] st-patched: apply patches
  st.c           | 929 ++++++++++++++++++++++++++++++++++++-------------
  st.h           |  41 ++-
  win.h          |   2 +-
- x.c            | 455 +++++++++++++++++-------
- 11 files changed, 1613 insertions(+), 392 deletions(-)
+ x.c            | 456 +++++++++++++++++-------
+ 11 files changed, 1614 insertions(+), 392 deletions(-)
  create mode 100644 boxdraw.c
  create mode 100644 boxdraw_data.h
  create mode 100644 hb.c
@@ -2185,7 +2185,7 @@ index 6de960d..94679e4 100644
  void xfinishdraw(void);
  void xloadcols(void);
 diff --git a/x.c b/x.c
-index b36fb8c..15b05e1 100644
+index b36fb8c..f2e046d 100644
 --- a/x.c
 +++ b/x.c
 @@ -14,11 +14,13 @@
@@ -2234,7 +2234,15 @@ index b36fb8c..15b05e1 100644
  		    (match(ms->mod, state) ||  /* exact or forced */
  		     match(ms->mod, state & ~forcemousemod))) {
  			ms->func(&(ms->arg));
-@@ -752,12 +758,12 @@ xresize(int col, int row)
+@@ -686,6 +692,7 @@ setsel(char *str, Time t)
+ 	XSetSelectionOwner(xw.dpy, XA_PRIMARY, xw.win, t);
+ 	if (XGetSelectionOwner(xw.dpy, XA_PRIMARY) != xw.win)
+ 		selclear();
++	clipcopy(NULL);
+ }
+ 
+ void
+@@ -752,12 +759,12 @@ xresize(int col, int row)
  
  	XFreePixmap(xw.dpy, xw.buf);
  	xw.buf = XCreatePixmap(xw.dpy, xw.win, win.w, win.h,
@@ -2249,7 +2257,7 @@ index b36fb8c..15b05e1 100644
  }
  
  ushort
-@@ -812,6 +818,10 @@ xloadcols(void)
+@@ -812,6 +819,10 @@ xloadcols(void)
  			else
  				die("could not allocate color %d\n", i);
  		}
@@ -2260,7 +2268,7 @@ index b36fb8c..15b05e1 100644
  	loaded = 1;
  }
  
-@@ -842,6 +852,12 @@ xsetcolorname(int x, const char *name)
+@@ -842,6 +853,12 @@ xsetcolorname(int x, const char *name)
  	XftColorFree(xw.dpy, xw.vis, xw.cmap, &dc.col[x]);
  	dc.col[x] = ncolor;
  
@@ -2273,7 +2281,7 @@ index b36fb8c..15b05e1 100644
  	return 0;
  }
  
-@@ -1062,6 +1078,9 @@ xunloadfont(Font *f)
+@@ -1062,6 +1079,9 @@ xunloadfont(Font *f)
  void
  xunloadfonts(void)
  {
@@ -2283,7 +2291,7 @@ index b36fb8c..15b05e1 100644
  	/* Free the loaded fonts in the font cache.  */
  	while (frclen > 0)
  		XftFontClose(xw.dpy, frc[--frclen].font);
-@@ -1134,11 +1153,23 @@ xinit(int cols, int rows)
+@@ -1134,11 +1154,23 @@ xinit(int cols, int rows)
  	Window parent;
  	pid_t thispid = getpid();
  	XColor xmousefg, xmousebg;
@@ -2308,7 +2316,7 @@ index b36fb8c..15b05e1 100644
  
  	/* font */
  	if (!FcInit())
-@@ -1148,7 +1179,7 @@ xinit(int cols, int rows)
+@@ -1148,7 +1180,7 @@ xinit(int cols, int rows)
  	xloadfonts(usedfont, 0);
  
  	/* colors */
@@ -2317,7 +2325,7 @@ index b36fb8c..15b05e1 100644
  	xloadcols();
  
  	/* adjust fixed window geometry */
-@@ -1168,24 +1199,20 @@ xinit(int cols, int rows)
+@@ -1168,24 +1200,20 @@ xinit(int cols, int rows)
  		| ButtonMotionMask | ButtonPressMask | ButtonReleaseMask;
  	xw.attrs.colormap = xw.cmap;
  
@@ -2346,7 +2354,7 @@ index b36fb8c..15b05e1 100644
  
  	/* Xft rendering context */
  	xw.draw = XftDrawCreate(xw.dpy, xw.buf, xw.vis, xw.cmap);
-@@ -1237,6 +1264,24 @@ xinit(int cols, int rows)
+@@ -1237,6 +1265,24 @@ xinit(int cols, int rows)
  	xsel.xtarget = XInternAtom(xw.dpy, "UTF8_STRING", 0);
  	if (xsel.xtarget == None)
  		xsel.xtarget = XA_STRING;
@@ -2371,7 +2379,7 @@ index b36fb8c..15b05e1 100644
  }
  
  int
-@@ -1253,121 +1298,158 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
+@@ -1253,121 +1299,158 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
  	FcPattern *fcpattern, *fontpattern;
  	FcFontSet *fcsets[] = { NULL };
  	FcCharSet *fccharset;
@@ -2578,17 +2586,17 @@ index b36fb8c..15b05e1 100644
 -			FcPatternAddCharSet(fcpattern, FC_CHARSET,
 -					fccharset);
 -			FcPatternAddBool(fcpattern, FC_SCALABLE, 1);
--
+ 
 -			FcConfigSubstitute(0, fcpattern,
 -					FcMatchPattern);
 -			FcDefaultSubstitute(fcpattern);
- 
--			fontpattern = FcFontSetMatch(0, fcsets, 1,
--					fcpattern, &fcres);
 +			/* Cleanup and get ready for next segment. */
 +			hbcleanup(&shaped);
 +			start = i;
  
+-			fontpattern = FcFontSetMatch(0, fcsets, 1,
+-					fcpattern, &fcres);
+-
 -			/* Allocate memory for the new cache entry. */
 -			if (frclen >= frccap) {
 -				frccap += 16;
@@ -2629,7 +2637,7 @@ index b36fb8c..15b05e1 100644
  	return numspecs;
  }
  
-@@ -1488,8 +1570,12 @@ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, i
+@@ -1488,8 +1571,12 @@ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, i
  	r.width = width;
  	XftDrawSetClipRectangles(xw.draw, winx, winy, &r, 1);
  
@@ -2644,7 +2652,7 @@ index b36fb8c..15b05e1 100644
  
  	/* Render underline and strikethrough. */
  	if (base.mode & ATTR_UNDERLINE) {
-@@ -1517,14 +1603,17 @@ xdrawglyph(Glyph g, int x, int y)
+@@ -1517,14 +1604,17 @@ xdrawglyph(Glyph g, int x, int y)
  }
  
  void
@@ -2664,7 +2672,7 @@ index b36fb8c..15b05e1 100644
  
  	if (IS_SET(MODE_HIDE))
  		return;
-@@ -1532,7 +1621,7 @@ xdrawcursor(int cx, int cy, Glyph g, int ox, int oy, Glyph og)
+@@ -1532,7 +1622,7 @@ xdrawcursor(int cx, int cy, Glyph g, int ox, int oy, Glyph og)
  	/*
  	 * Select the right color for the right mode.
  	 */
@@ -2673,7 +2681,7 @@ index b36fb8c..15b05e1 100644
  
  	if (IS_SET(MODE_REVERSE)) {
  		g.mode |= ATTR_REVERSE;
-@@ -1652,18 +1741,16 @@ xdrawline(Line line, int x1, int y1, int x2)
+@@ -1652,18 +1742,16 @@ xdrawline(Line line, int x1, int y1, int x2)
  	Glyph base, new;
  	XftGlyphFontSpec *specs = xw.specbuf;
  
@@ -2696,7 +2704,7 @@ index b36fb8c..15b05e1 100644
  			i = 0;
  		}
  		if (i == 0) {
-@@ -1672,8 +1759,10 @@ xdrawline(Line line, int x1, int y1, int x2)
+@@ -1672,8 +1760,10 @@ xdrawline(Line line, int x1, int y1, int x2)
  		}
  		i++;
  	}
@@ -2709,7 +2717,7 @@ index b36fb8c..15b05e1 100644
  }
  
  void
-@@ -2014,6 +2103,118 @@ run(void)
+@@ -2014,6 +2104,118 @@ run(void)
  	}
  }
  
@@ -2828,7 +2836,7 @@ index b36fb8c..15b05e1 100644
  void
  usage(void)
  {
-@@ -2038,6 +2239,10 @@ main(int argc, char *argv[])
+@@ -2038,6 +2240,10 @@ main(int argc, char *argv[])
  	case 'a':
  		allowaltscreen = 0;
  		break;
@@ -2839,7 +2847,7 @@ index b36fb8c..15b05e1 100644
  	case 'c':
  		opt_class = EARGF(usage());
  		break;
-@@ -2087,6 +2292,8 @@ run:
+@@ -2087,6 +2293,8 @@ run:
  
  	setlocale(LC_CTYPE, "");
  	XSetLocaleModifiers("");
