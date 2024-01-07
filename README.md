@@ -120,6 +120,15 @@ The patch ships with the following keybinds by default:
 - `Control Shift Prior`, `Control Shift Next` and `Control Shift Home` to zoom in, out and reset zoom, respectively.
 - `Meta l` and `Meta o` to scroll visible urls and open them, respectively.
 
+## Undercurl
+
+This build includes the undercurl patch, which enables st to show a curly line unerneath errors if your editor supports it.
+If you whish to use it, you must install the modified terminfo entry for st in your home directory by running:
+```sh
+tic -sx st.info
+```
+in the patched st source directly.
+
 ## Modifying
 
 Add or remove any patch files from the `patches/` directory.
