@@ -2,7 +2,8 @@
 
 cd "$(dirname "$0")"
 
-rev='9846a56'
+. ./version
+
 date=$(date '+%Y%m%d')
 
 echo "==> getting sources"

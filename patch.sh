@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")"
 
-rev='9846a56'
+. ./version
 
 echo "==> getting sources"
 
