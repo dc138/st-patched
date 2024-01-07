@@ -1,3 +1,4 @@
 # Modify this to change the st revision targeted by this patch
 # Dont forget to update the README when changing this
 rev='9846a56'
+ver='0.9'
