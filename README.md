@@ -29,6 +29,7 @@ cd st
 git checkout 9846a56
 git am path/to/st-patched-xxx-xxx.diff
 ```
+Alternatively, use the provided `patch.sh` script to automatically download the correct revision and apply the patch.
 Keep in mind that you will need to checkout the correct revision before applying this patch.
 Then, compile st and install it by running:
 ```
@@ -132,7 +133,7 @@ in the patched st source directly.
 ## Modifying
 
 Add or remove any patch files from the `patches/` directory.
-Then, use the `patch.sh` script to download the st source and apply all patches in the `patches/` directory in order.
+Then, use the `generate.sh` script to download the st source and apply all patches in the `patches/` directory in order.
 You now have a patched version of st in the `st/` directory.
 This will also create a new unified patch with your changes included, which you can use separately if you wish.
 
