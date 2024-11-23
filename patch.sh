@@ -10,6 +10,7 @@ if [ ! -d 'st' ] || [ ! -d 'st/.git' ]; then
   rm -rfv 'st'
   git clone git://git.suckless.org/st st
   cd 'st'
+  git checkout $rev
 else
   cd 'st'
   git reset --hard origin/master
