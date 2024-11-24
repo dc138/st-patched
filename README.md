@@ -6,6 +6,8 @@ Targets st revision `9846a56` (a few commits after st version `0.9`), and most l
 This repo includes a single unified patch file with all patches built-in, that you can apply directly to the st source.
 Individual patches used to create it are provided in the `patches/` directory.
 
+![Example image](assets/example.png)
+
 ## Patches included
 
 - [alpha](https://st.suckless.org/patches/alpha/) _(osc 11)_
