@@ -2,3 +2,4 @@
 # Dont forget to update the README when changing this
 export rev='9846a56'
 export ver='0.9'
+export url='https://git.suckless.org/st'

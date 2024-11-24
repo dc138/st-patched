@@ -3,7 +3,9 @@
 A build of the [Suckless Simple Terminal](https://st.suckless.org) (st) with many essential community patches modified to work together.
 Targets st revision `9846a56` (a few commits after st version `0.9`), and most likely wont work with other versions without manual changes to the patches.
 
-This repo includes a single unified patch file with all patches built-in, that you can apply directly to the st source.
+A single unified patch file with all patches built-in is included as a github releases.
+You can apply directly to the st source, as explained below.
+If you use Arch Linux, this package is provided in the AUR under the name `st-community-git`.
 Individual patches used to create it are provided in the `patches/` directory.
 
 ![Example image](assets/example.png)
@@ -24,7 +26,7 @@ Individual patches used to create it are provided in the `patches/` directory.
 
 ## Using this build
 
-Clone the st source and apply the patch by running:
+Download the generated unified patch file from the github releases tab, then clone the st source and apply it by running:
 ```sh
 git clone git://git.suckless.org/st
 cd st
@@ -32,11 +34,11 @@ git checkout 9846a56
 git am path/to/st-community-xxx-xxx.diff
 ```
 Alternatively, use the provided `patch.sh` script to automatically download the correct revision and apply the patch.
-Keep in mind that you will need to checkout the correct revision before applying this patch.
-Then, compile st and install it by running:
+Then, compile st and install it directly from the generated `st` directory by running:
 ```
+cd st
 make
-make install # May require root
+make install # Requires root
 ```
 
 ## Configuration
@@ -62,7 +64,6 @@ st.cursorshape
 st.csscale
 st.shscale
 ```
-Where `st.` may be replaced with `*.` for any variable.
 
 When specifying variables like this, they override compile-time configuration.
 Remember to run `xrdb -merge ~/.Xresources` after modifying the file, for changes to take effect.
@@ -71,10 +72,12 @@ If you have terminal instances already running, you can send them a `USR1` signa
 For example, your `.Xresources` file may look like:
 
 ```css
+! St specific config
 st.font: Iosevka Nerd Font Mono:style=Regular:pixelsize=14:antialias=true:autohint=false
 st.borderpx: 6
 st.alpha: 1.0
 
+! Global config
 *.foreground:  #dcdcdc
 *.background:  #121212
 *.cursorColor: #dcdcdc
@@ -125,8 +128,8 @@ The patch ships with the following keybinds by default:
 
 ## Undercurl
 
-This build includes the undercurl patch, which enables st to show a curly line unerneath errors if your editor supports it.
-If you whish to use it, you must install the modified terminfo entry for st in your home directory by running:
+This build includes the undercurl patch, which enables st to show a curly line underneath errors if your editor supports it.
+If you wish to use it, you must install the modified terminfo entry for st in your home directory by running:
 ```sh
 tic -sx st.info
 ```
@@ -141,6 +144,6 @@ This will also create a new unified patch with your changes included, which you 
 
 # Credits
 
-All patches included are credited to their respective authors, see respective files for more information.
-Most have been modified to apply together without any interaction needed.
+Most of the included patches have been modified to apply together without any interaction needed.
+All files included are credited to their respective authors, see each file for more information.
 Based on suckless.org's [Suckless Simple Terminal](https://st.suckless.org/).
