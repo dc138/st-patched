@@ -1,4 +1,4 @@
-# st-patched
+# st-community
 
 A build of the [Suckless Simple Terminal](https://st.suckless.org) (st) with many essential community patches modified to work together.
 Targets st revision `9846a56` (a few commits after st version `0.9`), and most likely wont work with other versions without manual changes to the patches.
@@ -29,7 +29,7 @@ Clone the st source and apply the patch by running:
 git clone git://git.suckless.org/st
 cd st
 git checkout 9846a56
-git am path/to/st-patched-xxx-xxx.diff
+git am path/to/st-community-xxx-xxx.diff
 ```
 Alternatively, use the provided `patch.sh` script to automatically download the correct revision and apply the patch.
 Keep in mind that you will need to checkout the correct revision before applying this patch.

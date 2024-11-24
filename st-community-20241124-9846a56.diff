@@ -1,7 +1,7 @@
-From 5ee510b2c2c3b3a3eb9481185e2e5f333499bbd3 Mon Sep 17 00:00:00 2001
-From: DarthChungo <antonio@adaro.eu>
-Date: Sun, 31 Dec 2023 20:23:26 +0100
-Subject: [PATCH] st-patched: apply patches
+From 2ddbb36e66ba8256183e4c00de44a5bb03144443 Mon Sep 17 00:00:00 2001
+From: dc138 <antonio@adaro.eu>
+Date: Sun, 24 Nov 2024 18:49:16 +0100
+Subject: [PATCH] st-community: apply patches
 
 ---
  Makefile       |    9 +-
@@ -3819,5 +3819,5 @@ index b36fb8c..86597c7 100644
 +		waitpid(chpid, NULL, 0);
 +}
 -- 
-2.43.0
+2.47.0
 

@@ -1,8 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 cd "$(dirname "$0")"
-
-. ./version
+source ./version
 
 date=$(date '+%Y%m%d')
 
@@ -12,6 +11,8 @@ if [ ! -d 'st' ] || [ ! -d 'st/.git' ]; then
   rm -rfv 'st'
   git clone git://git.suckless.org/st st
   cd 'st'
+  git checkout $rev
+
 else
   cd 'st'
   git reset --hard origin/master
@@ -34,8 +35,8 @@ done
 
 echo "==> generaing unified patch file"
 
-rm -f ../st-patched-*-*.diff
+rm -f ../st-community-*-*.diff
 
 git add .
-git commit -m 'st-patched: apply patches'
-git format-patch 'HEAD^' --stdout > "../st-patched-$date-$rev.diff"
+git commit -m 'st-community: apply patches'
+git format-patch 'HEAD^' --stdout > "../st-community-$date-$rev.diff"

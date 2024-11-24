@@ -1,8 +1,7 @@
 #!/bin/bash
 
 cd "$(dirname "$0")"
-
-. ./version
+source ./version
 
 echo "==> getting sources"
 
@@ -11,6 +10,7 @@ if [ ! -d 'st' ] || [ ! -d 'st/.git' ]; then
   git clone git://git.suckless.org/st st
   cd 'st'
   git checkout $rev
+
 else
   cd 'st'
   git reset --hard origin/master
@@ -22,4 +22,4 @@ fi
 
 echo "==> applying unified patch file"
 
-git am ../st-patched-*-$rev.diff
+git am ../st-community-*-$rev.diff
