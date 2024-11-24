@@ -1,7 +1,7 @@
 # st-patched
 
-A simple build of the [Suckless Terminal](https://st.suckless.org) (st) with many community patches applied together.
-Targets st revision `9846a56` (a few commits after st version `0.9`), and, most likely wont work with other versions without manual changes to the patches.
+A build of the [Suckless Simple Terminal](https://st.suckless.org) (st) with many essential community patches modified to work together.
+Targets st revision `9846a56` (a few commits after st version `0.9`), and most likely wont work with other versions without manual changes to the patches.
 
 This repo includes a single unified patch file with all patches built-in, that you can apply directly to the st source.
 Individual patches used to create it are provided in the `patches/` directory.
@@ -17,10 +17,10 @@ Individual patches used to create it are provided in the `patches/` directory.
 - [desktopentry](https://st.suckless.org/patches/desktopentry/)
 - [sync](https://st.suckless.org/patches/sync/) _(modified for st 0.9)_
 - [copyurl](https://st.suckless.org/patches/copyurl/) _(with multiline)_
-- [undercurl](https://st.suckless.org/patches/undercurl/) _(modified to work with patches)_
-- [openclipboard](https://st.suckless.org/patches/open_copied_url/) _(modified to work with patches)_
+- [undercurl](https://st.suckless.org/patches/undercurl/) _(modified to work with previous patches)_
+- [openclipboard](https://st.suckless.org/patches/open_copied_url/) _(modified to work with previous patches)_
 
-## Using this patch
+## Using this build
 
 Clone the st source and apply the patch by running:
 ```sh
@@ -119,7 +119,7 @@ The patch ships with the following keybinds by default:
 - `Control Shift C` and `Control Shif V` for copy-pasting.
 - `Control Shift Y` or `Shift Insert` to paste selection.
 - `Control Shift Prior`, `Control Shift Next` and `Control Shift Home` to zoom in, out and reset zoom, respectively.
-- `Meta l` and `Meta o` to scroll visible urls and open them, respectively.
+- `Meta l` and `Meta o` to scroll through visible URLs and open them, respectively.
 
 ## Undercurl
 
@@ -139,7 +139,6 @@ This will also create a new unified patch with your changes included, which you 
 
 # Credits
 
-All patches included are credited to their respective authors.
-Some have been modified to apply together cleanly.
-See each patch page for more info.
-Based on suckless.org's [Simple Terminal](https://st.suckless.org/).
+All patches included are credited to their respective authors, see respective files for more information.
+Most have been modified to apply together without any interaction needed.
+Based on suckless.org's [Suckless Simple Terminal](https://st.suckless.org/).
