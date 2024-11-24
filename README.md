@@ -5,7 +5,7 @@ Targets st revision `9846a56` (a few commits after st version `0.9`), and most l
 
 A single unified patch file with all patches built-in is included as a github releases.
 You can apply directly to the st source, as explained below.
-If you use Arch Linux, this package is provided in the AUR under the name `st-community-git`.
+If you use Arch Linux, a package is available in the [AUR](https://aur.archlinux.org/packages/st-community-git).
 Individual patches used to create it are provided in the `patches/` directory.
 
 ![Example image](assets/example.png)
@@ -28,15 +28,13 @@ Individual patches used to create it are provided in the `patches/` directory.
 
 Download the generated unified patch file from the github releases tab, then clone the st source and apply it by running:
 ```sh
-git clone git://git.suckless.org/st
-cd st
+git clone https://git.suckless.org/st st && cd st
 git checkout 9846a56
 git am path/to/st-community-xxx-xxx.diff
 ```
 Alternatively, use the provided `patch.sh` script to automatically download the correct revision and apply the patch.
-Then, compile st and install it directly from the generated `st` directory by running:
+Then, compile st and install it directly from downloaded `st` directory by running:
 ```
-cd st
 make
 make install # Requires root
 ```
