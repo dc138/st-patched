@@ -3,7 +3,7 @@
 A build of the [Suckless Simple Terminal](https://st.suckless.org) (st) with many essential community patches modified to work together.
 Targets st revision `9846a56` (a few commits after st version `0.9`), and most likely wont work with other versions without manual changes to the patches.
 
-A single unified patch file with all patches built-in is included as a github releases.
+A single unified git patch file with all patches built-in is included as a github releases.
 You can apply directly to the st source, as explained below.
 If you use Arch Linux, a package is available in the [AUR](https://aur.archlinux.org/packages/st-community-git).
 Individual patches used to create it are provided in the `patches/` directory.
@@ -23,33 +23,38 @@ Individual patches used to create it are provided in the `patches/` directory.
 - [copyurl](https://st.suckless.org/patches/copyurl/) _(with multiline)_
 - [undercurl](https://st.suckless.org/patches/undercurl/) _(modified to work with previous patches)_
 - [openclipboard](https://st.suckless.org/patches/open_copied_url/) _(modified to work with previous patches)_
+- [netwmicon](https://st.suckless.org/patches/netwmicon/) _(modified to work with previous patches)_
 
 ## Using this build
 
 Download the generated unified patch file from the github releases tab, then clone the st source and apply it by running:
 ```sh
-git clone https://git.suckless.org/st st && cd st
+git clone https://git.suckless.org/st st
+cd st
 git checkout 9846a56
-git am path/to/st-community-xxx-xxx.diff
+git apply path/to/st-community-xxx-xxx.diff
 ```
 Alternatively, use the provided `patch.sh` script to automatically download the correct revision and apply the patch.
+Note that git apply is required, as the normal patch command cannot handle binary files.
 Then, compile st and install it directly from downloaded `st` directory by running:
 ```
 make
 make install # Requires root
 ```
+Compiling may require installing the necessary libraries into your system.
 
 ## Configuration
 
 St's main configuration method is by changing hard-coded values in `config.def.h`, and then recompiling the software.
 You may do this by manually modifying the source, or by changing `patches/99-config.diff` and reapplying it.
 
-Thanks to the `xresources`, patch some values (like colors and font) can be read from the X resources database (usually at `~/.Xresources`) on the fly.
+Thanks to the `xresources` patch some values (like colors and font) can be read from the X resources database (usually stored at `~/.Xresources`) on the fly.
 St will detect any of the following variables if used:
 
 ```css
 st.colorX            /* Where X is a number in the range [0, 15] */
 st.foreground
+st.background
 st.cursorColor
 st.reverse-cursor
 st.alpha

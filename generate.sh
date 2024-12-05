@@ -3,7 +3,7 @@
 cd "$(dirname "$0")"
 source ./version
 
-./patch.sh
+./patch.sh || exit
 
 echo "==> generaing unified patch file"
 
